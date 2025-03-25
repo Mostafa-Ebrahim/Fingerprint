@@ -3,7 +3,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   const fingerprintTable = document.getElementById("fingerprintTable");
 
   try {
-    const response = await fetch("https://creepjs-api.web.app/fp");
+    const response = await fetch("https://creepjs-api.web.app/fp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ request: "fingerprint" }),
+    });
+
     const data = await response.json();
 
     if (data && data.fingerprint) {
