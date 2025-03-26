@@ -1,39 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Device Fingerprint</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .hash-container {
-            word-break: break-all;
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 0.25rem;
-            margin: 1rem 0;
-        }
-    </style>
-</head>
-<body>
-    <div class="container py-4">
-        <h1 class="mb-4">Device Fingerprint</h1>
-        <div class="hash-container">
-            <h5>Fingerprint Hash:</h5>
-            <code id="fingerprintHash"></code>
-        </div>
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead>
-                    <tr>
-                        <th>Property</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody id="fingerprintTable"></tbody>
-            </table>
-        </div>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container py-2">
+      <h1 class="mb-4">Device Fingerprint</h1>
+      <div class="hash-container">
+        <h5>Fingerprint Hash:</h5>
+        <code id="fingerprintHash"></code>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-striped table-hover table-sm">
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody id="fingerprintTable"></tbody>
+        </table>
+      </div>
     </div>
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
