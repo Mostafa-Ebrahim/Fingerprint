@@ -10,8 +10,6 @@ async function getFingerprint() {
     hardwareConcurrency: navigatorInfo.hardwareConcurrency,
     maxTouchPoints: navigatorInfo.maxTouchPoints,
     devicePixelRatio: window.devicePixelRatio,
-    availableScreenWidth: screenInfo.availWidth,
-    availableScreenHeight: screenInfo.availHeight,
     logicalProcessors: navigator.hardwareConcurrency || "Unknown",
     touchSupport: "ontouchstart" in window || navigator.maxTouchPoints > 0,
     screenOrientation: screen.orientation ? screen.orientation.type : "Unknown",
@@ -37,6 +35,8 @@ async function getFingerprint() {
       ? "Reduce"
       : "No-preference",
     installedFonts: await detectFonts(),
+    gpuModel: getGPUModel(),
+    networkInfo: getNetworkInfo(),
   };
 
   const hash = await hashFingerprint(JSON.stringify(fingerprintData));
@@ -118,6 +118,29 @@ async function detectFonts() {
   }
 
   return detectedFonts.join(", ");
+}
+
+function getGPUModel() {
+  const canvas = document.createElement("canvas");
+  const gl =
+    canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+  if (!gl) return "Unknown";
+  const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+  if (debugInfo) {
+    return gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+  }
+  return "Unknown";
+}
+
+function getNetworkInfo() {
+  const connection =
+    navigator.connection ||
+    navigator.mozConnection ||
+    navigator.webkitConnection;
+  if (connection) {
+    return `${connection.effectiveType} (${connection.downlink} Mbps) - RTT: ${connection.rtt} ms - Save Data: ${connection.saveData}`;
+  }
+  return "Not available";
 }
 
 window.addEventListener("load", getFingerprint);
