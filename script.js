@@ -4,6 +4,7 @@ async function getFingerprint() {
 
   let fingerprintData = {
     platform: (navigatorInfo.platform || "Unknown").split(/\s+/)[0],
+    deviceMemory: navigator.deviceMemory || "Unknown",
     screenResolution: screenInfo.width + "x" + screenInfo.height,
     colorDepth: screenInfo.colorDepth,
     timezoneOffset: new Date().getTimezoneOffset(),
