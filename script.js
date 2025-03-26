@@ -3,7 +3,7 @@ async function getFingerprint() {
   const screenInfo = window.screen;
 
   let fingerprintData = {
-    platform: navigatorInfo.platform ? navigatorInfo.platform.split(" ")[0] : "Unknown",
+    platform: (navigatorInfo.platform || "Unknown").split(/\s+/)[0],
     screenResolution: screenInfo.width + "x" + screenInfo.height,
     colorDepth: screenInfo.colorDepth,
     timezoneOffset: new Date().getTimezoneOffset(),
@@ -18,10 +18,13 @@ async function getFingerprint() {
     colorGamut: navigatorInfo.colorGamut || "Unknown",
     monochromeDepth: navigatorInfo.monochrome || "Unknown",
     pointerCapabilities: navigator.maxTouchPoints > 0 ? "Touch" : "Mouse",
-    deviceType: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
-    navigatorLanguage: navigator.languages && navigator.languages.length > 0
-      ? navigator.languages[0]
-      : navigator.language || "Unknown",
+    deviceType: /Mobi|Android/i.test(navigator.userAgent)
+      ? "Mobile"
+      : "Desktop",
+    navigatorLanguage:
+      navigator.languages && navigator.languages.length > 0
+        ? navigator.languages[0]
+        : navigator.language || "Unknown",
     cpuThreads: navigator.hardwareConcurrency || "Unknown",
     hardwareConcurrencyLevel: navigator.hardwareConcurrency || "Unknown",
     deviceAspectRatio: (screenInfo.width / screenInfo.height).toFixed(2),
@@ -37,15 +40,17 @@ async function getFingerprint() {
   };
 
   const hash = await hashFingerprint(JSON.stringify(fingerprintData));
-  
+
   // Display the data
-  document.getElementById('fingerprintHash').textContent = hash;
-  const tableBody = document.getElementById('fingerprintTable');
-  
+  document.getElementById("fingerprintHash").textContent = hash;
+  const tableBody = document.getElementById("fingerprintTable");
+
   for (const [key, value] of Object.entries(fingerprintData)) {
-    const row = document.createElement('tr');
+    const row = document.createElement("tr");
     row.innerHTML = `
-      <td>${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</td>
+      <td>${key
+        .replace(/([A-Z])/g, " $1")
+        .replace(/^./, (str) => str.toUpperCase())}</td>
       <td>${value}</td>
     `;
     tableBody.appendChild(row);
@@ -115,4 +120,4 @@ async function detectFonts() {
   return detectedFonts.join(", ");
 }
 
-window.addEventListener('load', getFingerprint);
+window.addEventListener("load", getFingerprint);
