@@ -3,7 +3,7 @@ async function getFingerprint() {
   const screenInfo = window.screen;
 
   let fingerprintData = {
-    platform: navigatorInfo.platform,
+    platform: navigatorInfo.platform ? navigatorInfo.platform.split(" ")[0] : "Unknown",
     screenResolution: screenInfo.width + "x" + screenInfo.height,
     colorDepth: screenInfo.colorDepth,
     timezoneOffset: new Date().getTimezoneOffset(),
@@ -18,15 +18,11 @@ async function getFingerprint() {
     colorGamut: navigatorInfo.colorGamut || "Unknown",
     monochromeDepth: navigatorInfo.monochrome || "Unknown",
     pointerCapabilities: navigator.maxTouchPoints > 0 ? "Touch" : "Mouse",
-    deviceType: /Mobi|Android/i.test(navigator.userAgent)
-      ? "Mobile"
-      : "Desktop",
-    navigatorLanguage:
-      navigator.languages && navigator.languages.length > 0
-        ? navigator.languages[0]
-        : navigator.language || "Unknown",
+    deviceType: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
+    navigatorLanguage: navigator.languages && navigator.languages.length > 0
+      ? navigator.languages[0]
+      : navigator.language || "Unknown",
     cpuThreads: navigator.hardwareConcurrency || "Unknown",
-    userAgentPlatform: navigator.platform || "Unknown",
     hardwareConcurrencyLevel: navigator.hardwareConcurrency || "Unknown",
     deviceAspectRatio: (screenInfo.width / screenInfo.height).toFixed(2),
     maxColorDepth: screenInfo.pixelDepth || "Unknown",
