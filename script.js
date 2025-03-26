@@ -37,7 +37,6 @@ async function getFingerprint() {
       : "No-preference",
     installedFonts: await detectFonts(),
     gpuModel: getGPUModel(),
-    networkInfo: getNetworkInfo(),
   };
 
   const hash = await hashFingerprint(JSON.stringify(fingerprintData));
@@ -131,17 +130,6 @@ function getGPUModel() {
     return gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
   }
   return "Unknown";
-}
-
-function getNetworkInfo() {
-  const connection =
-    navigator.connection ||
-    navigator.mozConnection ||
-    navigator.webkitConnection;
-  if (connection) {
-    return `${connection.effectiveType} (${connection.downlink} Mbps) - RTT: ${connection.rtt} ms - Save Data: ${connection.saveData}`;
-  }
-  return "Not available";
 }
 
 window.addEventListener("load", getFingerprint);
