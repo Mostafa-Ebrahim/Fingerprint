@@ -7,9 +7,9 @@ async function getFingerprint() {
     orientationSupport: typeof DeviceOrientationEvent !== "undefined",
 
     audioFingerprint: await getAudioFingerprint(),
-    permissions: Object.entries(await getPermissionStates())
-      .map(([k, v]) => `${k}: ${v}`)
-      .join(", "),
+    // permissions: Object.entries(await getPermissionStates())
+    //   .map(([k, v]) => `${k}: ${v}`)
+    //   .join(", "),
 
     mediaDevicesCount:
       (await navigator.mediaDevices
