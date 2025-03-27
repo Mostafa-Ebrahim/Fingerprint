@@ -185,37 +185,48 @@ function getCanvasPixelFingerprint() {
 
 async function getAudioFingerprint() {
   try {
-    const OfflineContext = window.OfflineAudioContext;
+    const OfflineContext =
+      window.OfflineAudioContext || window.webkitOfflineAudioContext;
 
     if (!OfflineContext) {
       return "Not supported";
     }
 
     const context = new OfflineContext(1, 44100, 44100);
-    const oscillator = context.createOscillator();
+    const oscillator1 = context.createOscillator();
+    const oscillator2 = context.createOscillator();
     const compressor = context.createDynamicsCompressor();
+    const merger = context.createGain();
 
-    oscillator.type = "triangle";
-    oscillator.frequency.value = 1000;
+    oscillator1.type = "triangle";
+    oscillator1.frequency.setValueAtTime(1000, context.currentTime);
 
-    oscillator.connect(compressor);
+    oscillator2.type = "sawtooth";
+    oscillator2.frequency.setValueAtTime(1500, context.currentTime + 0.01);
+
+    oscillator1.connect(merger);
+    oscillator2.connect(merger);
+    merger.connect(compressor);
     compressor.connect(context.destination);
 
-    oscillator.start(0);
+    oscillator1.start();
+    oscillator2.start();
 
     const buffer = await context.startRendering();
-    let fingerprint = 0;
+    const channelData = buffer.getChannelData(0);
 
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < data.length; i++) {
-      fingerprint += Math.abs(data[i]);
-    }
+    const fingerprint = channelData.reduce(
+      (sum, value) => sum + Math.abs(value),
+      0
+    );
 
     return fingerprint.toFixed(3);
-  } catch (e) {
+  } catch (error) {
+    // console.error("Audio fingerprinting error:", error.message);
     return "Not supported";
   }
 }
+
 async function getPermissionStates() {
   if (!navigator.permissions) return "Not supported";
   const permissions = ["geolocation", "notifications", "camera", "microphone"];
