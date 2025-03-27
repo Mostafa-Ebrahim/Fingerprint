@@ -227,21 +227,68 @@ async function getAudioFingerprint() {
   }
 }
 
-async function getPermissionStates() {
-  if (!navigator.permissions) return "Not supported";
-  const permissions = ["geolocation", "notifications", "camera", "microphone"];
-  const results = {};
+async function getAudioFingerprint() {
+  try {
+    const OfflineContext =
+      window.OfflineAudioContext || window.webkitOfflineAudioContext;
 
-  for (let perm of permissions) {
-    try {
-      const status = await navigator.permissions.query({ name: perm });
-      results[perm] = status.state;
-    } catch {
-      results[perm] = "Unknown";
+    if (!OfflineContext) {
+      return "Not supported";
     }
-  }
 
-  return results;
+    const startTime = performance.now();
+
+    const context = new OfflineContext(1, 44100, 44100);
+    const oscillator1 = context.createOscillator();
+    const oscillator2 = context.createOscillator();
+    const gainNode = context.createGain();
+    const compressor = context.createDynamicsCompressor();
+
+    oscillator1.type = "triangle";
+    oscillator1.frequency.setValueAtTime(987, context.currentTime);
+    oscillator2.type = "sine";
+    oscillator2.frequency.setValueAtTime(1234, context.currentTime);
+
+    gainNode.gain.setValueAtTime(
+      Math.random() * 0.5 + 0.5,
+      context.currentTime
+    );
+
+    oscillator1.connect(gainNode);
+    oscillator2.connect(gainNode);
+    gainNode.connect(compressor);
+    compressor.connect(context.destination);
+
+    // Start oscillators
+    oscillator1.start();
+    oscillator2.start();
+
+    // Render the buffer
+    const buffer = await context.startRendering();
+    const channelData = buffer.getChannelData(0);
+
+    // Calculate fingerprint
+    const fingerprint = channelData.reduce(
+      (sum, value) => sum + Math.abs(value),
+      0
+    );
+
+    const processingTime = performance.now() - startTime;
+    const compressorValues = [
+      compressor.threshold.value,
+      compressor.knee.value,
+      compressor.ratio.value,
+      compressor.attack.value,
+      compressor.release.value,
+    ].map((v) => v.toFixed(2));
+
+    return `${fingerprint.toFixed(3)}-${processingTime.toFixed(
+      2
+    )}-${compressorValues.join(",")}`;
+  } catch (error) {
+    // console.error("Audio fingerprinting error:", error.message);
+    return "Not supported";
+  }
 }
 
 window.addEventListener("load", getFingerprint);
