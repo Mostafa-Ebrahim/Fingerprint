@@ -6,7 +6,7 @@ async function getFingerprint() {
     motionSupport: typeof DeviceMotionEvent !== "undefined",
     orientationSupport: typeof DeviceOrientationEvent !== "undefined",
 
-    audioFingerprint: await getAudioFingerprint(),
+    audio: await getAudioFingerprint(),
     // permissions: Object.entries(await getPermissionStates())
     //   .map(([k, v]) => `${k}: ${v}`)
     //   .join(", "),
@@ -229,58 +229,34 @@ async function getAudioFingerprint() {
 
 async function getAudioFingerprint() {
   try {
-    const OfflineContext =
-      window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    const OfflineContext = window.OfflineAudioContext;
 
     if (!OfflineContext) {
       return "Not supported";
     }
 
-    const startTime = performance.now();
     const context = new OfflineContext(1, 44100, 44100);
     const oscillator = context.createOscillator();
-    const gainNode = context.createGain();
     const compressor = context.createDynamicsCompressor();
 
     oscillator.type = "triangle";
-    oscillator.frequency.setValueAtTime(950, context.currentTime);
+    oscillator.frequency.value = 1000;
 
-    const randomGain = Math.sin(performance.now() % 1000) * 0.3 + 0.7;
-    gainNode.gain.setValueAtTime(randomGain, context.currentTime);
-
-    oscillator.connect(gainNode);
-    gainNode.connect(compressor);
+    oscillator.connect(compressor);
     compressor.connect(context.destination);
 
-    oscillator.start();
+    oscillator.start(0);
 
     const buffer = await context.startRendering();
-    const channelData = buffer.getChannelData(0);
+    let fingerprint = 0;
 
-    const fingerprint = channelData.reduce(
-      (sum, value, index) =>
-        sum + Math.abs(value * (index % 2 === 0 ? 1.1 : 0.9)),
-      0
-    );
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      fingerprint += Math.abs(data[i]);
+    }
 
-    const processingTime = performance.now() - startTime;
-
-    const compressorValues = [
-      compressor.threshold.value,
-      compressor.knee.value,
-      compressor.ratio.value,
-      compressor.attack.value,
-      compressor.release.value,
-    ].map((v) => v.toFixed(2));
-
-    const screenFactor = window.screen.width * window.screen.height;
-    const audioLatency = context.baseLatency || 0.0001;
-
-    return `${fingerprint.toFixed(3)}-${processingTime.toFixed(
-      2
-    )}-${compressorValues.join(",")}-${screenFactor}-${audioLatency}`;
-  } catch (error) {
-    console.error("Audio fingerprinting error:", error.message);
+    return fingerprint.toFixed(3);
+  } catch (e) {
     return "Not supported";
   }
 }
