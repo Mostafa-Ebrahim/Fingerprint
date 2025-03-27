@@ -237,43 +237,34 @@ async function getAudioFingerprint() {
     }
 
     const startTime = performance.now();
-
     const context = new OfflineContext(1, 44100, 44100);
-    const oscillator1 = context.createOscillator();
-    const oscillator2 = context.createOscillator();
+    const oscillator = context.createOscillator();
     const gainNode = context.createGain();
     const compressor = context.createDynamicsCompressor();
 
-    oscillator1.type = "triangle";
-    oscillator1.frequency.setValueAtTime(987, context.currentTime);
-    oscillator2.type = "sine";
-    oscillator2.frequency.setValueAtTime(1234, context.currentTime);
+    oscillator.type = "triangle";
+    oscillator.frequency.setValueAtTime(950, context.currentTime);
 
-    gainNode.gain.setValueAtTime(
-      Math.random() * 0.5 + 0.5,
-      context.currentTime
-    );
+    const randomGain = Math.sin(performance.now() % 1000) * 0.3 + 0.7;
+    gainNode.gain.setValueAtTime(randomGain, context.currentTime);
 
-    oscillator1.connect(gainNode);
-    oscillator2.connect(gainNode);
+    oscillator.connect(gainNode);
     gainNode.connect(compressor);
     compressor.connect(context.destination);
 
-    // Start oscillators
-    oscillator1.start();
-    oscillator2.start();
+    oscillator.start();
 
-    // Render the buffer
     const buffer = await context.startRendering();
     const channelData = buffer.getChannelData(0);
 
-    // Calculate fingerprint
     const fingerprint = channelData.reduce(
-      (sum, value) => sum + Math.abs(value),
+      (sum, value, index) =>
+        sum + Math.abs(value * (index % 2 === 0 ? 1.1 : 0.9)),
       0
     );
 
     const processingTime = performance.now() - startTime;
+
     const compressorValues = [
       compressor.threshold.value,
       compressor.knee.value,
@@ -282,11 +273,14 @@ async function getAudioFingerprint() {
       compressor.release.value,
     ].map((v) => v.toFixed(2));
 
+    const screenFactor = window.screen.width * window.screen.height;
+    const audioLatency = context.baseLatency || 0.0001;
+
     return `${fingerprint.toFixed(3)}-${processingTime.toFixed(
       2
-    )}-${compressorValues.join(",")}`;
+    )}-${compressorValues.join(",")}-${screenFactor}-${audioLatency}`;
   } catch (error) {
-    // console.error("Audio fingerprinting error:", error.message);
+    console.error("Audio fingerprinting error:", error.message);
     return "Not supported";
   }
 }
